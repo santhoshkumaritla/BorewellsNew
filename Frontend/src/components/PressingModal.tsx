@@ -24,23 +24,32 @@ const PressingModal = ({ isOpen, onClose }: PressingModalProps) => {
     // Remove all non-digits
     const cleaned = phoneNumber.replace(/\D/g, '');
     
-    // If it starts with 91, return as is with +
+    // If it starts with 91 and is 12 digits, remove the 91 prefix
     if (cleaned.startsWith('91') && cleaned.length === 12) {
-      return `+${cleaned}`;
+      return cleaned.substring(2); // Return just the 10 digits
     }
     
-    // If it's 10 digits, add +91
+    // If it's 10 digits, return as is
+    if (cleaned.length === 10) {
+      return cleaned;
+    }
+    
+    // If it's already formatted with +91, extract the 10 digits
+    if (phoneNumber.startsWith('+91')) {
+      return phoneNumber.substring(3); // Remove +91
+    }
+    
+    // Default: return cleaned digits (should be 10 for Indian numbers)
+    return cleaned;
+  };
+
+  const formatPhoneDisplay = (phoneNumber: string) => {
+    // For display purposes, show +91 format
+    const cleaned = phoneNumber.replace(/\D/g, '');
     if (cleaned.length === 10) {
       return `+91${cleaned}`;
     }
-    
-    // If it's already formatted with +91, return as is
-    if (phoneNumber.startsWith('+91')) {
-      return phoneNumber;
-    }
-    
-    // Default: add +91 if it looks like an Indian number
-    return `+91${cleaned}`;
+    return phoneNumber;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +76,7 @@ const PressingModal = ({ isOpen, onClose }: PressingModalProps) => {
 
     try {
       // Send data to backend API
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('https://borewellsnew.onrender.com/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +100,7 @@ const PressingModal = ({ isOpen, onClose }: PressingModalProps) => {
 👤 *Name:* ${formData.name}
 🏘️ *Village:* ${formData.villageName}
 🏛️ *District:* ${formData.districtName}
-📱 *Mobile:* ${formData.mobileNumber}
+📱 *Mobile:* ${formatPhoneDisplay(formData.mobileNumber)}
 📧 *Email:* ${formData.email}
 📏 *Old Bore Depth:* ${formData.oldBoreFeet} feet
 🔧 *New Depth Required:* ${formData.newBoreFeet} feet
@@ -113,7 +122,7 @@ Please contact me for further details.`;
 👤 *Name:* ${formData.name}
 🏘️ *Village:* ${formData.villageName}
 🏛️ *District:* ${formData.districtName}
-📱 *Mobile:* ${formData.mobileNumber}
+📱 *Mobile:* ${formatPhoneDisplay(formData.mobileNumber)}
 📧 *Email:* ${formData.email}
 📏 *Old Bore Depth:* ${formData.oldBoreFeet} feet
 🔧 *New Depth Required:* ${formData.newBoreFeet} feet
